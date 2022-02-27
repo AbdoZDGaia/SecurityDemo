@@ -1,0 +1,17 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "Secret Page";
+}
+<h1>This is a Secured Page</h1>
+@if (User.Identity.IsAuthenticated)
+{
+    <h2>Welcome @User.Identity.Name</h2>
+    <ul>
+        @foreach (var item in User.Claims)
+        {
+            <li>@item.Type: @item.Value</li>
+        }
+    </ul>
+}
