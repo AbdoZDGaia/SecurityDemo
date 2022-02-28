@@ -1,4 +1,5 @@
 ﻿using AuthenticationApp.Models;
+using AuthenticationApp.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -11,10 +12,12 @@ namespace AuthenticationApp.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IUserService _userService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IUserService userService)
         {
             _logger = logger;
+            _userService = userService;
         }
 
         public IActionResult Index()
@@ -50,11 +53,9 @@ namespace AuthenticationApp.Controllers
         [HttpPost("validate")]
         public async Task<IActionResult> Validate(string username, string password, string returnUrl)
         {
-            if (username == "AbdoZ" && password == "P@ss")
+            var valid = _userService.TryValidate(username, password, out var claims);
+            if (valid)
             {
-                var claims = new List<Claim>();
-                claims.Add(new Claim(ClaimTypes.Name, username));
-                claims.Add(new Claim(ClaimTypes.NameIdentifier, "AbdoZ Id"));
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
                 var items = new Dictionary<string, string>();
@@ -85,6 +86,7 @@ namespace AuthenticationApp.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        //[Authorize]
         public async Task<IActionResult> Secured()
         {
             var idToken = await HttpContext.GetTokenAsync("id_token");
